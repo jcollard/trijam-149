@@ -9,10 +9,11 @@ public class EnemyController : MapObject
     {
 
         PlayerController.Instance.IncreaseTime();
+        PlayerController.Instance.Kills++;
         PlayerController.Instance.CanBackFlip = true;
         GridController.Instance.RemoveMapObject(row, col);
         DestroyAt = Time.time + PlayerController.Instance.MoveDuration;
-        
+        SoundController.Instance.Bones.Play();
     }
 
     public void Update()

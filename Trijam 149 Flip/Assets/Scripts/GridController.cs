@@ -1,12 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GridController : MonoBehaviour
 {
 
     public static GridController Instance;
-    public Canvas GameOverScreen, ClearedScreen;
+    public Canvas GameOverScreen, ClearedScreen, ReadyScreen;
+    public UnityEngine.UI.Text StageText, StageShadow, ReportText, ReportShadow, BestText, BestShadow;
+
+    public UnityEngine.UI.Button[] LastStageButtons, NextStageButtons;
 
     private readonly Dictionary<(int, int), MapObject> MapObjects = new Dictionary<(int, int), MapObject>();
     public int Width;
@@ -24,13 +28,16 @@ public class GridController : MonoBehaviour
     public Transform Container;
 
     public System.Random RNG = new System.Random();
+    public int MaxCoins;
+    public int MaxKills;
 
     // Start is called before the first frame update
     void Start()
     {
         Instance = this;
         RNG = new System.Random(42);
-        GenerateGrid();
+
+        Restart();
     }
 
     // Update is called once per frame
@@ -43,8 +50,14 @@ public class GridController : MonoBehaviour
     {
         CaptainCoder.Unity.UnityEngineUtils.Instance.DestroyChildren(this.Container);
         MapObjects.Clear();
-        RNG = new System.Random(PlayerController.Instance.level);
-        Distance = 20 + PlayerController.Instance.level*5;
+        if (PlayerController.Instance != null)
+        {
+            RNG = new System.Random(PlayerController.Instance.level);
+            Distance = 20 + PlayerController.Instance.level * 5;
+            MusicController.Instance.SetTrack(PlayerController.Instance.level);
+        }
+        MaxCoins = 0;
+        MaxKills = 0;
         for (int col = 0; col < Width; col++)
         {
             for (int row = 0; row <= Distance; row++)
@@ -57,6 +70,8 @@ public class GridController : MonoBehaviour
 
                 if (row < 5 || row == Distance) continue;
 
+                ObstacleChance = 0.05f + (0.01f * PlayerController.Instance.level);
+                ObstacleChance = Mathf.Min(0.33f, ObstacleChance);
                 if (RNG.NextDouble() < ObstacleChance)
                 {
                     GenerateObstacle(row, col);
@@ -72,6 +87,37 @@ public class GridController : MonoBehaviour
 
             }
         }
+
+        EnsureBeatableLevel();
+
+    }
+
+    public void EnsureBeatableLevel()
+    {
+        int Col = 1;
+
+        for (int Row = 0; Row <= Distance; Row++)
+        {
+            if (MapObjects.ContainsKey((Row, Col)))
+            {
+                MapObject mo = MapObjects[(Row, Col)];
+                if (mo.GetComponent<ObstacleController>() != null)
+                {
+                    UnityEngine.Object.Destroy(MapObjects[(Row, Col)].gameObject);
+                    MapObjects.Remove((Row, Col));
+                }
+            }
+            int nextMove = RNG.Next(0, 2);
+            if (nextMove == 0)
+            {
+                Col++;
+            }
+            else
+            {
+                Col--;
+            }
+            Col = ((Col % Width) + Width) % Width;
+        }
     }
 
     public void GenerateObstacle(int row, int col)
@@ -86,6 +132,7 @@ public class GridController : MonoBehaviour
 
     public void GenerateEnemy(int row, int col)
     {
+        MaxKills++;
         int ix = (row + col) % Enemies.Length;
         MapObject Tile = UnityEngine.Object.Instantiate<MapObject>(Enemies[ix]);
         MapObjects.Add((row, col), Tile);
@@ -96,6 +143,7 @@ public class GridController : MonoBehaviour
 
     public void GeneratePowerup(int row, int col)
     {
+        MaxCoins++;
         int ix = (row + col) % Powerups.Length;
         MapObject Tile = UnityEngine.Object.Instantiate<MapObject>(Powerups[ix]);
         MapObjects.Add((row, col), Tile);
@@ -122,8 +170,30 @@ public class GridController : MonoBehaviour
 
     public void Restart()
     {
+        StageText.text = $"Stage {PlayerController.Instance.level}";
+        StageShadow.text = $"Stage {PlayerController.Instance.level}";
+        PlayerController p = PlayerController.Instance;
+        foreach (Button b in NextStageButtons)
+        {
+            if (p.Levels.Count > p.level)
+            {
+                b.gameObject.SetActive(true);
+            }
+            else
+            {
+                b.gameObject.SetActive(false);
+            }
+        }
+
+        bool prevButton = p.level > 1;
+        foreach (Button b in LastStageButtons)
+        {
+            b.gameObject.SetActive(prevButton);
+        }
+
         GameOverScreen.gameObject.SetActive(false);
         ClearedScreen.gameObject.SetActive(false);
+        ReadyScreen.gameObject.SetActive(true);
         GenerateGrid();
         PlayerController.Instance.Reset();
 

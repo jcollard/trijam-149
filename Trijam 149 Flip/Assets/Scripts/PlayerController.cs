@@ -4,14 +4,16 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-
     public static PlayerController Instance;
+
+    public List<LevelData> Levels = new List<LevelData>();
 
     public UnityEngine.UI.Text TimeRemaining;
 
     public int CoinsCollected;
+    public int Kills;
     public int level = 1;
-    public float MaxTime = 20;
+    public float MaxTime = 8;
     public float StartTime = -1;
     public float EndTime;
 
@@ -29,6 +31,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         Instance = this;
+        this.Levels.Add(new LevelData());
     }
 
     // Update is called once per frame
@@ -54,13 +57,13 @@ public class PlayerController : MonoBehaviour
             TimeRemaining.text = "Times up!";
         }
         else if (StartTime < 0) {
-            TimeRemaining.text = "Ready?";
+            TimeRemaining.text = $"{MaxTime:0.00}";
         }
         else
         {
-            int tr = (int)(EndTime - Time.time);
+            float tr = EndTime - Time.time;
             System.Math.Max(0, tr);
-            TimeRemaining.text = $"{tr}";
+            TimeRemaining.text = $"{tr:0.00}";
         }
     }
 
@@ -153,8 +156,8 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetButtonDown("Down") && CanBackFlip)
         {
-            this.Move(-1, 0);
             CanBackFlip = false;
+            this.Move(-1, 0);            
         }
     }
 
@@ -166,6 +169,8 @@ public class PlayerController : MonoBehaviour
         {
             StartTime = Time.time;
             EndTime = Time.time + MaxTime;
+            MusicController.Instance.FadeIn();
+            GridController.Instance.ReadyScreen.gameObject.SetActive(false);
         }
         this.LastRow = Row;
         this.LastCol = Col;
@@ -198,15 +203,66 @@ public class PlayerController : MonoBehaviour
     public void Win()
     {
         CanMove = false;
-        level++;
+        LevelData data = Levels[level-1];
+        if (Levels.Count < level+1)
+        {
+            Levels.Add(new LevelData());
+        }
+        data.SetCoins(CoinsCollected);
+        data.SetKills(Kills);
+
+        int MaxCoins = GridController.Instance.MaxCoins;
+        int MaxKills = GridController.Instance.MaxKills;
+        
+        string report = $"Coins: {CoinsCollected}/{MaxCoins}    Skeletons {Kills}/{MaxKills}";
+        GridController.Instance.ReportShadow.text = report;
+        GridController.Instance.ReportText.text = report;
+
+        string best = $"Best: {data.Coins}/{MaxCoins}       Best: {data.Kills}/{MaxKills}";
+        GridController.Instance.BestShadow.text = best;
+        GridController.Instance.BestText.text = best;
+
+        foreach (UnityEngine.UI.Button b in GridController.Instance.NextStageButtons)
+        {
+            if (Levels.Count > level)
+            {
+                b.gameObject.SetActive(true);
+            }
+            else
+            {
+                b.gameObject.SetActive(false);
+            }
+        }
+
+        bool prevButton = level > 1;
+        foreach (UnityEngine.UI.Button b in GridController.Instance.LastStageButtons)
+        {
+            b.gameObject.SetActive(prevButton);
+        }
+        
         GridController.Instance.ClearedScreen.gameObject.SetActive(true);
+    }
+
+    public void NextLevel()
+    {
+        level++;
+        GridController.Instance.Restart();
+        
+    }
+
+    public void PrevLevel()
+    {
+        level--;
+        level = System.Math.Max(1, level);
+        GridController.Instance.Restart();
     }
 
     public void Reset()
     {
         CoinsCollected = 0;
+        Kills = 0;
         StartTime = -1;
-        Row = 0;
+        Row = 1;
         Col = 1;
         CanMove = true;
         CanBackFlip = true;

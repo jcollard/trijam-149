@@ -12,6 +12,7 @@ public class PowerupController : MapObject
         PlayerController.Instance.CoinsCollected++;
         GridController.Instance.RemoveMapObject(row, col);
         DestroyAt = Time.time + PlayerController.Instance.MoveDuration;
+        SoundController.Instance.Coin.Play();
     }
 
     public void Update()

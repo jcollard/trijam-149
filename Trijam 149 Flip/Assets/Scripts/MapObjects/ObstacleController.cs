@@ -7,5 +7,6 @@ public class ObstacleController : MapObject
     public override void Destroy(int row, int col)
     {
         PlayerController.Instance.Die();
+        SoundController.Instance.Death.Play();
     }
 }
