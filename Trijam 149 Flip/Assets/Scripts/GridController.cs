@@ -7,10 +7,11 @@ public class GridController : MonoBehaviour
 {
 
     public static GridController Instance;
-    public Canvas GameOverScreen, ClearedScreen, ReadyScreen;
-    public UnityEngine.UI.Text StageText, StageShadow, ReportText, ReportShadow, BestText, BestShadow;
+    public Canvas GameOverScreen, ClearedScreen, ReadyScreen, UpgradeScreen, StartScreen, MainUI;
+    public UnityEngine.UI.Text StageText, StageShadow, ReportText, ReportShadow, BestText, BestShadow, StageReportText, StageReportShadow, ProtipText, ProtipShadow, BackflipsText, BackflipsShadow;
 
     public UnityEngine.UI.Button[] LastStageButtons, NextStageButtons;
+    public GameObject PlayerModel;
 
     private readonly Dictionary<(int, int), MapObject> MapObjects = new Dictionary<(int, int), MapObject>();
     public int Width;
@@ -36,14 +37,7 @@ public class GridController : MonoBehaviour
     {
         Instance = this;
         RNG = new System.Random(42);
-
-        Restart();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        PlayerController.Instance.CanMove = false;
     }
 
     public void GenerateGrid()
@@ -170,9 +164,17 @@ public class GridController : MonoBehaviour
 
     public void Restart()
     {
+        GenerateGrid();
         StageText.text = $"Stage {PlayerController.Instance.level}";
         StageShadow.text = $"Stage {PlayerController.Instance.level}";
+
+        
         PlayerController p = PlayerController.Instance;
+        LevelData ld = p.Levels[p.level-1];
+        string report = $"Coins: {ld.Coins}/{MaxCoins}    Skeletons {ld.Kills}/{MaxKills}";
+        StageReportShadow.text = report;
+        StageReportText.text = report;
+
         foreach (Button b in NextStageButtons)
         {
             if (p.Levels.Count > p.level)
@@ -193,10 +195,23 @@ public class GridController : MonoBehaviour
 
         GameOverScreen.gameObject.SetActive(false);
         ClearedScreen.gameObject.SetActive(false);
+        UpgradeScreen.gameObject.SetActive(false);
         ReadyScreen.gameObject.SetActive(true);
-        GenerateGrid();
+        
         PlayerController.Instance.Reset();
 
+    }
+
+    public void StartGame()
+    {
+        MainUI.gameObject.SetActive(true);
+        StartScreen.gameObject.SetActive(false);
+        GameOverScreen.gameObject.SetActive(false);
+        ClearedScreen.gameObject.SetActive(false);
+        UpgradeScreen.gameObject.SetActive(false);
+        ReadyScreen.gameObject.SetActive(false);
+        PlayerModel.SetActive(true);
+        Restart();
     }
 
 }

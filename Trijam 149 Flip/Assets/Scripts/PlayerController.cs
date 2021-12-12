@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,21 +8,26 @@ public class PlayerController : MonoBehaviour
     public static PlayerController Instance;
 
     public List<LevelData> Levels = new List<LevelData>();
+    public string[] Protips;
 
     public UnityEngine.UI.Text TimeRemaining;
 
     public int CoinsCollected;
+    public int MaxBackflips;
+    public int Backflips;
+
     public int Kills;
     public int level = 1;
     public float MaxTime = 8;
     public float StartTime = -1;
     public float EndTime;
+    public float BonusTime = 1f;
 
     public int Row, Col, LastRow, LastCol;
     public float MovedAt, MoveDuration;
     public float JumpHeight;
 
-    public bool CanBackFlip = true;
+    // public bool CanBackFlip = true;
     public bool CanMove = true;
 
     public GameObject PlayerModel;
@@ -43,6 +49,8 @@ public class PlayerController : MonoBehaviour
         AnimateFlip();
         CheckSwitchModel();
         CheckTime();
+        GridController.Instance.BackflipsText.text = $"Backflips: {Backflips}";
+        GridController.Instance.BackflipsShadow.text = $"Backflips: {Backflips}";
     }
 
     public void CheckTime()
@@ -56,7 +64,8 @@ public class PlayerController : MonoBehaviour
             Die();
             TimeRemaining.text = "Times up!";
         }
-        else if (StartTime < 0) {
+        else if (StartTime < 0)
+        {
             TimeRemaining.text = $"{MaxTime:0.00}";
         }
         else
@@ -108,12 +117,12 @@ public class PlayerController : MonoBehaviour
     public void AnimateFlip()
     {
         float EndMoveAt = MovedAt + MoveDuration;
-        float endAngle = Row*180;
+        float endAngle = Row * 180;
         float newAngle = endAngle;
         if (EndMoveAt > Time.time)
         {
             float percent = (Time.time - MovedAt) / MoveDuration;
-            float startAngle = LastRow*180;
+            float startAngle = LastRow * 180;
             newAngle = Mathf.LerpAngle(startAngle, endAngle, percent);
         }
         PlayerModel.transform.eulerAngles = new Vector3(newAngle, 0, 0);
@@ -154,22 +163,22 @@ public class PlayerController : MonoBehaviour
             this.Move(1, 1);
         }
 
-        if (Input.GetButtonDown("Down") && CanBackFlip)
+        if (Input.GetButtonDown("Down") && Backflips > 0 && Row > 0)
         {
-            CanBackFlip = false;
-            this.Move(-1, 0);            
+            Backflips--;
+            this.Move(-1, 0);
         }
     }
 
     public void Move(int Rows, int Cols)
     {
         if (!CanMove)
-        return;
+            return;
         if (StartTime < 0)
         {
             StartTime = Time.time;
             EndTime = Time.time + MaxTime;
-            MusicController.Instance.FadeIn();
+            GridController.Instance.UpgradeScreen.gameObject.SetActive(false);
             GridController.Instance.ReadyScreen.gameObject.SetActive(false);
         }
         this.LastRow = Row;
@@ -187,7 +196,7 @@ public class PlayerController : MonoBehaviour
 
     public void IncreaseTime()
     {
-        EndTime += 1.5f;
+        EndTime += BonusTime;
         if ((EndTime - Time.time) > MaxTime)
         {
             EndTime = Time.time + MaxTime;
@@ -197,14 +206,18 @@ public class PlayerController : MonoBehaviour
     public void Die()
     {
         CanMove = false;
+        string tip = Protips[UnityEngine.Random.Range(0, Protips.Length)];
+        string protip = $"Flippin' Tip: {tip}";
+        GridController.Instance.ProtipText.text = protip;
+        GridController.Instance.ProtipShadow.text = protip;
         GridController.Instance.GameOverScreen.gameObject.SetActive(true);
     }
 
     public void Win()
     {
         CanMove = false;
-        LevelData data = Levels[level-1];
-        if (Levels.Count < level+1)
+        LevelData data = Levels[level - 1];
+        if (Levels.Count < level + 1)
         {
             Levels.Add(new LevelData());
         }
@@ -213,7 +226,7 @@ public class PlayerController : MonoBehaviour
 
         int MaxCoins = GridController.Instance.MaxCoins;
         int MaxKills = GridController.Instance.MaxKills;
-        
+
         string report = $"Coins: {CoinsCollected}/{MaxCoins}    Skeletons {Kills}/{MaxKills}";
         GridController.Instance.ReportShadow.text = report;
         GridController.Instance.ReportText.text = report;
@@ -239,7 +252,7 @@ public class PlayerController : MonoBehaviour
         {
             b.gameObject.SetActive(prevButton);
         }
-        
+
         GridController.Instance.ClearedScreen.gameObject.SetActive(true);
     }
 
@@ -247,7 +260,7 @@ public class PlayerController : MonoBehaviour
     {
         level++;
         GridController.Instance.Restart();
-        
+
     }
 
     public void PrevLevel()
@@ -265,6 +278,15 @@ public class PlayerController : MonoBehaviour
         Row = 1;
         Col = 1;
         CanMove = true;
-        CanBackFlip = true;
+        Backflips = MaxBackflips;
+    }
+
+
+    public void RestoreBackFlip()
+    {
+        if (Backflips < MaxBackflips)
+        {
+            Backflips++;
+        }
     }
 }

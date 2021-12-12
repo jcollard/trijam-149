@@ -7,30 +7,35 @@ public class MusicController : MonoBehaviour
     public static MusicController Instance;
 
     public AudioSource[] Tracks;
+    public float[] Volumes;
     public int CurrentTrack = -1;
 
     public float MaxVolume = 0.5f;
     public float FadeDuration = 3;
-    public float FadeInStartAt = -1;
-    public float FadeOutStartAt = -1;
-    public float Volume;
+    public float[] FadeInStartAt;
+    public float[] FadeOutStartAt;
 
     // Start is called before the first frame update
     void Start()
     {
         Instance = this;
+        Volumes = new float[Tracks.Length];
+        FadeInStartAt = new float[Tracks.Length];
+        FadeOutStartAt = new float[Tracks.Length];
+
+        for (int i = 0; i < Volumes.Length; i++)
+        {
+            Volumes[i] = 0;
+            FadeInStartAt[i] = -1;
+            FadeOutStartAt[i] = -1;
+        }
     }
 
     void Update()
     {
-        if (FadeInStartAt > 0)
-        {
-            HandleFadeIn();
-        }
-        else if (FadeOutStartAt > 0)
-        {
-            HandleFadeOut();
-        }
+        HandleFadeIn();
+        HandleFadeOut();
+
     }
 
     public void SetTrack(int i)
@@ -45,64 +50,63 @@ public class MusicController : MonoBehaviour
         {
             if (j == ix)
             {
-                Tracks[j].Play();
+                FadeInStartAt[j] = Time.time;
+                FadeOutStartAt[j] = -1;
             }
             else
             {
-                Tracks[j].Stop();
+                FadeOutStartAt[j] = Time.time;
+                FadeInStartAt[j] = -1;
             }
         }
     }
 
     private void HandleFadeIn()
     {
-        float EndAt = FadeInStartAt + FadeDuration;
-        if (EndAt > Time.time)
+        for (int i = 0; i < Tracks.Length; i++)
         {
-            float percent = (Time.time - FadeInStartAt) / FadeDuration;
-            SetVolume(percent * MaxVolume);
-        }
-        else
-        {
-            SetVolume(MaxVolume);
+            if (i == CurrentTrack && !Tracks[i].isPlaying)
+            {
+                Tracks[i].Play();
+            }
+            float EndAt = FadeInStartAt[i] + FadeDuration;
+            if (EndAt > Time.time)
+            {
+                float percent = (Time.time - FadeInStartAt[i]) / FadeDuration;
+                SetVolume(percent * MaxVolume, i);
+            }
+            else
+            {
+                SetVolume(MaxVolume, i);
+            }
         }
     }
 
     private void HandleFadeOut()
     {
-        float EndAt = FadeOutStartAt + FadeDuration;
-        if (EndAt > Time.time)
+        for (int i = 0; i < Tracks.Length; i++)
         {
-            float percent = (Time.time - FadeOutStartAt) / FadeDuration;
-            SetVolume(MaxVolume - (percent * MaxVolume));
-        }
-        else
-        {
-            SetVolume(0);
+            if (i == CurrentTrack)
+            {
+                continue;
+            }
+            float EndAt = FadeOutStartAt[i] + FadeDuration;
+            if (EndAt > Time.time)
+            {
+                float percent = (Time.time - FadeOutStartAt[i]) / FadeDuration;
+                SetVolume(MaxVolume - (percent * MaxVolume), i);
+            }
+            else
+            {
+                SetVolume(0, i);
+                Tracks[i].Stop();
+            }
         }
     }
-    public void FadeIn()
+    public void SetVolume(float volume, int track)
     {
-        if (FadeInStartAt < 0)
-        {
-            FadeInStartAt = Time.time;
-            FadeOutStartAt = -1;
-        }
-    }
-
-    public void FadeOut()
-    {
-        FadeOutStartAt = Time.time;
-        FadeInStartAt = -1;
-    }
-
-    public void SetVolume(float volume)
-    {
-        this.Volume = volume;
-        foreach (AudioSource a in Tracks)
-        {
-            a.volume = volume;
-        }
+        this.Volumes[track] = volume;
+        this.Tracks[track].volume = volume;
     }
 
 }
