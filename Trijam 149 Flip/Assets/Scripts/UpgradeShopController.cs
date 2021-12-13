@@ -9,9 +9,9 @@ public class UpgradeShopController : MonoBehaviour
     public Text Backflips, MaxTime, BonusTime;
     public Text BackflipButtonText, MaxTimeButtonText, BonusTimeButtonText;
 
-    public int BackflipCost = 1;
-    public int MaxTimeCost = 1;
-    public int BonusTimeCost = 1;
+    public float BackflipCost = 1;
+    public float MaxTimeCost = 1;
+    public float BonusTimeCost = 1;
     public int CoinsSpent = 0;
     public int TotalCoins
     {
@@ -50,46 +50,49 @@ public class UpgradeShopController : MonoBehaviour
         Debug.Log($"Total Coins? {TotalCoins}");
         CoinsEarned.text = $"{RemainingCoins}/{TotalCoins}";
         Backflips.text = $"{p.MaxBackflips}";
-        BackflipButtonText.text = $"{BackflipCost} Coins";
+        BackflipButtonText.text = $"{(int)BackflipCost} Coins";
 
         MaxTime.text = $"{p.MaxTime:0.00}";
-        MaxTimeButtonText.text = $"{MaxTimeCost} Coins";
+        MaxTimeButtonText.text = $"{(int)MaxTimeCost} Coins";
 
         BonusTime.text = $"{p.BonusTime:0.00}";
-        BonusTimeButtonText.text = $"{BonusTimeCost} Coins";
+        BonusTimeButtonText.text = $"{(int)BonusTimeCost} Coins";
 
     }
 
     public void UpgradeBackflips()
     {
-        if (RemainingCoins >= BackflipCost)
+        if (RemainingCoins >= (int)BackflipCost)
         {
-            CoinsSpent += BackflipCost;
+            CoinsSpent += (int)BackflipCost;
             PlayerController.Instance.MaxBackflips++;
             PlayerController.Instance.Backflips = PlayerController.Instance.MaxBackflips;
-            BackflipCost++;
+            BackflipCost += 0.5f;
+            BackflipCost = Mathf.Min(BackflipCost, 6);
             DrawText();
         }
     }
 
     public void UpgradeMaxTime()
     {
-        if (RemainingCoins >= MaxTimeCost)
+        if (RemainingCoins >= (int)MaxTimeCost)
         {
-            CoinsSpent += MaxTimeCost;
+            CoinsSpent += (int)MaxTimeCost;
             PlayerController.Instance.MaxTime += 0.10f;
-            MaxTimeCost++;
+            MaxTimeCost += 0.5f;
+            MaxTimeCost = Mathf.Min(MaxTimeCost, 6);
             DrawText();
         }
     }
 
     public void UpgradeBonusTime()
     {
-        if (RemainingCoins >= BonusTimeCost)
+        if (RemainingCoins >= (int)BonusTimeCost)
         {
-            CoinsSpent += BonusTimeCost;
+            CoinsSpent += (int)BonusTimeCost;
             PlayerController.Instance.BonusTime += 0.10f;
-            BonusTimeCost++;
+            BonusTimeCost += 0.5f;
+            BonusTimeCost = Mathf.Min(BonusTimeCost, 6);
             DrawText();
         }
     }

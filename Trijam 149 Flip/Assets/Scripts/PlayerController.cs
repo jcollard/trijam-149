@@ -168,6 +168,54 @@ public class PlayerController : MonoBehaviour
             Backflips--;
             this.Move(-1, 0);
         }
+
+        if (Input.GetButtonDown("Restart"))
+        {
+            GridController.Instance.Restart();
+        }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            Vector3 rawPos = Input.mousePosition;
+            rawPos.z = -10;
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(rawPos);
+            Debug.Log($"Input.mousePosition: {Input.mousePosition}");
+            Debug.Log($"ToWorldPoint: {mousePos}");
+        }
+
+
+        // Check for screen taps for mobile
+        if (Input.GetMouseButtonDown(0))
+        {
+            // Ignore screen taps if the upgrade screen is open
+            if (GridController.Instance.UpgradeScreen.gameObject.activeInHierarchy)
+            {
+                return;
+            }
+
+            Vector3 rawPos = Input.mousePosition;
+            rawPos.z = -10;
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(rawPos);
+            if (mousePos.y > 4)
+            {
+
+
+                if (mousePos.x >= 6)
+                {
+                    this.Move(1, -1);
+                } 
+                else if (mousePos.x < -5)
+                {
+                    this.Move(1, 1);
+                }
+                else if (Backflips > 0 && Row > 0)
+                {
+                    Backflips--;
+                    this.Move(-1, 0);
+                }
+            }
+
+        }
     }
 
     public void Move(int Rows, int Cols)

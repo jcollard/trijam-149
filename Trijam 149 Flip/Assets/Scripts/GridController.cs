@@ -47,7 +47,7 @@ public class GridController : MonoBehaviour
         if (PlayerController.Instance != null)
         {
             RNG = new System.Random(PlayerController.Instance.level);
-            Distance = 20 + PlayerController.Instance.level * 5;
+            Distance = 20 + PlayerController.Instance.level * 2;
             MusicController.Instance.SetTrack(PlayerController.Instance.level);
         }
         MaxCoins = 0;
