@@ -1505,7 +1505,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: aa9f170566990b542909676f73c96745, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -3997,9 +3997,9 @@ MonoBehaviour:
   PlayerModel: {fileID: 880048989}
   Width: 3
   Distance: 10
-  EnemyChance: 0.1
+  EnemyChance: 0.05
   ObstacleChance: 0.05
-  PowerupChance: 0.15
+  PowerupChance: 0.2
   Tiles:
   - {fileID: 7868843888853678091, guid: c2aa195753f919241b48685bebf6dc04, type: 3}
   - {fileID: 7868843888853678091, guid: 41e0832e488b2b5428a889a8a4f558c5, type: 3}
@@ -5734,7 +5734,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 96f2da55f6d5ad749867719a3cb4fec0, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -6488,7 +6488,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: f0eb164f96a90cb498335edfb65ccda1, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0

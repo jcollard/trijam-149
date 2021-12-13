@@ -12,6 +12,7 @@ public class UpgradeShopController : MonoBehaviour
     public float BackflipCost = 1;
     public float MaxTimeCost = 1;
     public float BonusTimeCost = 1;
+    private float MaxCost = 10;
     public int CoinsSpent = 0;
     public int TotalCoins
     {
@@ -68,7 +69,7 @@ public class UpgradeShopController : MonoBehaviour
             PlayerController.Instance.MaxBackflips++;
             PlayerController.Instance.Backflips = PlayerController.Instance.MaxBackflips;
             BackflipCost += 0.5f;
-            BackflipCost = Mathf.Min(BackflipCost, 6);
+            BackflipCost = Mathf.Min(BackflipCost, MaxCost);
             DrawText();
         }
     }
@@ -80,7 +81,7 @@ public class UpgradeShopController : MonoBehaviour
             CoinsSpent += (int)MaxTimeCost;
             PlayerController.Instance.MaxTime += 0.10f;
             MaxTimeCost += 0.5f;
-            MaxTimeCost = Mathf.Min(MaxTimeCost, 6);
+            MaxTimeCost = Mathf.Min(MaxTimeCost, MaxCost);
             DrawText();
         }
     }
@@ -92,7 +93,7 @@ public class UpgradeShopController : MonoBehaviour
             CoinsSpent += (int)BonusTimeCost;
             PlayerController.Instance.BonusTime += 0.10f;
             BonusTimeCost += 0.5f;
-            BonusTimeCost = Mathf.Min(BonusTimeCost, 6);
+            BonusTimeCost = Mathf.Min(BonusTimeCost, MaxCost);
             DrawText();
         }
     }

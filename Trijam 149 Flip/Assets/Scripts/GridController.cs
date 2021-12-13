@@ -47,14 +47,16 @@ public class GridController : MonoBehaviour
         if (PlayerController.Instance != null)
         {
             RNG = new System.Random(PlayerController.Instance.level);
-            Distance = 20 + PlayerController.Instance.level * 2;
+            Distance = 20 + PlayerController.Instance.level * 3;
             MusicController.Instance.SetTrack(PlayerController.Instance.level);
         }
         MaxCoins = 0;
         MaxKills = 0;
-        for (int col = 0; col < Width; col++)
+        int LastSkeleton = 0;
+        for (int row = 0; row <= Distance; row++)
         {
-            for (int row = 0; row <= Distance; row++)
+            
+            for (int col = 0; col < Width; col++)
             {
                 int ix = (row + col) % Tiles.Length;
                 GameObject Tile = UnityEngine.Object.Instantiate<GameObject>(Tiles[ix]);
@@ -63,7 +65,9 @@ public class GridController : MonoBehaviour
                 Tile.name = $"Tile: ({row}, {col})";
 
                 if (row < 5 || row == Distance) continue;
-
+                // float skeletonBonus = (1f / PlayerController.Instance.level) * LastSkeleton;
+                // skeletonBonus = Mathf.Min(.15f, skeletonBonus);
+                // Debug.Log($"SkeltonBonus: {skeletonBonus}");
                 ObstacleChance = 0.05f + (0.01f * PlayerController.Instance.level);
                 ObstacleChance = Mathf.Min(0.33f, ObstacleChance);
                 if (RNG.NextDouble() < ObstacleChance)
@@ -73,12 +77,21 @@ public class GridController : MonoBehaviour
                 else if (RNG.NextDouble() < EnemyChance)
                 {
                     GenerateEnemy(row, col);
+                    LastSkeleton = 0;
                 }
                 else if (RNG.NextDouble() < PowerupChance)
                 {
                     GeneratePowerup(row, col);
                 }
 
+            }
+
+            LastSkeleton++;
+            if (LastSkeleton >= 5)
+            {
+                // Debug.Log($"Row: {row}, Last Skeleton: {LastSkeleton}");
+                GenerateEnemy(row, RNG.Next(0,3));
+                LastSkeleton = 0;
             }
         }
 
@@ -126,6 +139,10 @@ public class GridController : MonoBehaviour
 
     public void GenerateEnemy(int row, int col)
     {
+        if (MapObjects.ContainsKey((row, col)))
+        {
+            return;
+        }
         MaxKills++;
         int ix = (row + col) % Enemies.Length;
         MapObject Tile = UnityEngine.Object.Instantiate<MapObject>(Enemies[ix]);
@@ -168,9 +185,9 @@ public class GridController : MonoBehaviour
         StageText.text = $"Stage {PlayerController.Instance.level}";
         StageShadow.text = $"Stage {PlayerController.Instance.level}";
 
-        
+
         PlayerController p = PlayerController.Instance;
-        LevelData ld = p.Levels[p.level-1];
+        LevelData ld = p.Levels[p.level - 1];
         string report = $"Coins: {ld.Coins}/{MaxCoins}    Skeletons {ld.Kills}/{MaxKills}";
         StageReportShadow.text = report;
         StageReportText.text = report;
@@ -197,7 +214,7 @@ public class GridController : MonoBehaviour
         ClearedScreen.gameObject.SetActive(false);
         UpgradeScreen.gameObject.SetActive(false);
         ReadyScreen.gameObject.SetActive(true);
-        
+
         PlayerController.Instance.Reset();
 
     }
